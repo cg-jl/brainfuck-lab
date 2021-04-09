@@ -44,7 +44,6 @@ uint8_t best_pair(uint8_t val) {
 /// next number is calculated from the direction and the difference to the
 /// first value is returned. This way ensures a loop over a lot of pluses.
 /// The pluses are easily optimsable, but they augment the code size.
-/// TODO: make this feature toggleable with a flag.
 uint8_t find_suitable_divisor(uint8_t v, uint8_t *diff, uint8_t direction) {
   uint8_t best_div = best_pair(v);
   *diff = 0;
