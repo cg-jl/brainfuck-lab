@@ -70,7 +70,8 @@ void byte_min(uint8_t next, uint8_t last) {
   }
 
   uint8_t direction = next > last ? '+' : '-';
-  uint8_t diff = next > last ? next - last : last - next;
+  uint8_t diff      = next > last ? next - last : last - next;
+
 
   if (diff <= 10) {
     // put the diff directly.
@@ -91,11 +92,11 @@ void byte_min(uint8_t next, uint8_t last) {
 
   // set loop initial value.
   putchar('>');
-  for (uint8_t i = 0; i < max; i++) putchar('+');
+  for (uint8_t i = 0; i < min; i++) putchar('+');
 
   // make compute loop.
   fputs("[<", stdout);
-  for (uint8_t i = 0; i < min; i++) putchar(direction);
+  for (uint8_t i = 0; i < max; i++) putchar(direction);
   fputs(">-]<", stdout);
 
   // rest of diff. this is why you need the direction reversed.
