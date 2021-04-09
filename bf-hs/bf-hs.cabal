@@ -1,0 +1,58 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 649a44c3b5605bf23f8ca16f22c32c5dd024a2be486cea79e2e554b8443be781
+
+name:           bf-hs
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/CyberGsus/brainfuck-lab#readme>
+homepage:       https://github.com/CyberGsus/brainfuck-lab#readme
+bug-reports:    https://github.com/CyberGsus/brainfuck-lab/issues
+author:         Cyber Gsus
+maintainer:     cyber.gsuscode@gmail.com
+copyright:      2021 Cyber Gsus
+license:        MIT
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/CyberGsus/brainfuck-lab
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_bf_hs
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable bf-hs-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_bf_hs
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bf-hs
+  default-language: Haskell2010
+
+test-suite bf-hs-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_bf_hs
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bf-hs
+  default-language: Haskell2010
