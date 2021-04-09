@@ -43,7 +43,7 @@ uint8_t best_pair(uint8_t val) {
 /// '+'). If the number is prime or coprime to [2, 15), then the 
 /// next number is calculated from the direction and the difference to the
 /// first value is returned. This way ensures a loop over a lot of pluses.
-/// The pluses are easily optimsable, but they augment the code size.
+/// The pluses are easily optimisable, but they augment the code size.
 uint8_t find_suitable_divisor(uint8_t v, uint8_t *diff, uint8_t direction) {
   uint8_t best_div = best_pair(v);
   *diff = 0;
@@ -117,15 +117,6 @@ void byte_normal(uint8_t next, uint8_t last) {
   for (uint8_t i = 0; i < diff; i++) putchar(direction);
 }
 
-
-uint8_t print_seq(void (*p)(uint8_t, uint8_t), const uint8_t *buf, uint8_t last) {
-  for (; *buf; ++buf) {
-    p(*buf, last);
-    last = *buf;
-  }
-  return last;
-}
-
 // gets UTF8 length for an initial sequence.
 size_t get_length(uint8_t value) {
   if (value & 0x80 == 0) return 1;
@@ -138,6 +129,9 @@ size_t get_length(uint8_t value) {
   return 0;
 }
 
+/// parses escapes such as '\\', '\n', '\e' and '\t'
+/// into the escaped meaning value before passint them into
+/// the printer.
 int unescape(const uint8_t *input, uint8_t *output, const uint8_t **next) {
   if (!*input) return 0;
   if (*input == '\\') {
@@ -198,7 +192,9 @@ int main(int argc, uint8_t *const* argv) {
     }
   }
 
-  void (*p)(uint8_t, uint8_t) = optimizes_for_size ? byte_min : byte_normal;
+  // kinda rough notation here, just choosing to call 'byte_min' or
+  // 'byte_normal' depending on the chosen optimization.
+  void (*printer)(uint8_t, uint8_t) = optimizes_for_size ? byte_min : byte_normal;
 
   uint8_t output[20];
   int result = 0;
@@ -207,7 +203,7 @@ int main(int argc, uint8_t *const* argv) {
   for (const char* arg = argv[i]; i < argc ; arg = argv[++i]) {
     while (*arg && (result = unescape(arg, output, &arg)) != 0) {
       if (i != argc - 1) {
-        p(' ', last);
+        printer(' ', last);
         last = ' ';
       }
       if (result < 0) {
@@ -215,7 +211,7 @@ int main(int argc, uint8_t *const* argv) {
         fputc('\n', stderr);
         return 1;
       }
-      p(*output, last);
+      printer(*output, last);
       putchar('.');
       last = *output;
     }
