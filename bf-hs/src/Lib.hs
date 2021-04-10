@@ -134,7 +134,7 @@ run buf@(Buffer _ _ p1) loop@(Loop ys : xs) =
 runBF :: [BFCommand] -> IO ()
 runBF = void . run newBuffer
 
-handleError :: Show a => a -> IO () 
+handleError :: Show a => a -> IO ()
 handleError = hPutStrLn stderr . ("Error: " ++) . show
 
 runFile :: String -> IO ()
