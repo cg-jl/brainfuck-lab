@@ -124,7 +124,7 @@ We keep halving the diff but remove the loop if the min div is 1.
 binary: 17 KB
 
 - `self.b` 137 KB (around 8 characters per byte)
-- `ls.b`   3.3 MB (around 24 characetrs per byte)
+- `ls.b`   3.3 MB (around 24 characters per byte)
 
 That strategy kept the same numbers overall.
 
@@ -140,6 +140,9 @@ binary: 17 KB
 - `ls.b`   2.6 MB (around 19 characters per byte)
 
 That... did REALLY good.
+
+Right now the threshold is at 12, so I'm going to explore bigger thresholds
+in case there is a noticeable improvement.
 
 It didn't do very well. I'll keep it at 12.
 
