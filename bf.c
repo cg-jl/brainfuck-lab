@@ -6,7 +6,7 @@
 
 
 /**
- * Raw brainfuck interpreter. Executes exactly what it's given.
+ * Raw brainfuck interpreter. Executes exactly what it's given (i.e, no optimizations).
  * supports up to 200 nested loops to the date.
  * Uses going back and forth into the file to implement the jumping
  * in loops.
@@ -35,13 +35,19 @@ int main(int argc, const char **argv) {
 
   bool skipping = false;
 
+  int skipping_depth = 0;
+
   long* loops_ptr = (long*) loops;
 
   for (uint8_t c; fread(&c, 1, 1, fp) == 1; ) {
     if (!isprint(c)) continue;
     // printf("pos: %ld | c: '%c'\n", ftell(fp), c);
     if (skipping) {
-      if (c == ']') skipping = false;
+      if (c == '[') skipping_depth++;
+      if (c == ']') {
+        if (skipping_depth == 0) skipping = false;
+        else skipping_depth--;
+      }
       continue;
     }
     switch (c) {
