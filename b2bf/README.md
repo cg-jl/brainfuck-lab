@@ -15,7 +15,7 @@ To compile all of the sources, I'm using this:
 make bin
 ```
 
-You can also just get the last version with
+You can also just get the [last version](./src/phase11.c) with
 ```bash
 make last
 ```
@@ -27,7 +27,7 @@ The test not only displays the code size results but also makes sure
 that the binaries outputted by each code are the same, so that the optimization
 is real.
 
-### Phase 1. Direct approach.
+### Phase 1. Direct approach. [source](./src/phase1.c)
 
 The direct approach is clearing out the cell and putting '+'s to get the next one.
 
@@ -36,7 +36,7 @@ binary: 17KB
 - `self.b`: 441 KB (around 26 characters per byte)
 - `ls.b`:   12 MB  (around 86 characters per byte)
 
-### Phase 2. Using last value and compute differences.
+### Phase 2. Using last value and compute differences. [source](./src/phase2.c)
 
 Now we take the last value as well and instead of clearing out the cell we just put the difference in '+'s.
 
@@ -47,7 +47,7 @@ binary: 17KB
 
 As you can see, that didn't do really well. Let's continue exploring.
 
-### Phase 3. Using bidirectional computation.
+### Phase 3. Using bidirectional computation. [source](./src/phase3.c)
 
 To the date I've only used `+`s to get the job done. Now I'm going to pick the direction (`+` or `-`) depending on the minimum difference that I choose,
 that is, `next - last` (using `+`) or `last - next` (using `-`).
@@ -58,7 +58,7 @@ binary: 17KB
 
 Very good! As you can see, using bidirectional computation reduced more than half the code necessary to run it.
 
-### Phase 4. Loops and multiplication.
+### Phase 4. Loops and multiplication. [source](./src/phase4.c)
 
 Brainfuck can do loops. Very simple loops, but it can do them. So what I have in mind is finding two numbers, which multiplied, give the difference.
 
@@ -74,7 +74,7 @@ there are multiplications by 1 (`[<+>-]`), and by 0 (`[<>-]`). That means there'
 
 Let's take them one at a time.
 
-### Phase 5. Removing duplicates.
+### Phase 5. Removing duplicates. [source](./src/phase5.c)
 
 Let's go with duplicates. Now, if the next value is the same as the last one, it will output nothing.
 
@@ -85,7 +85,7 @@ binary: 17 KB
 
 It did much better. Now, for the primes.
 
-### Phase 6. Handling primes I.
+### Phase 6. Handling primes I. [source](./src/phase6.c)
 
 The first way I'm going to handle primes is that no multiplication is going to go and instead we're going to use the same method as in Phase 2.
 This way we save up exactly 6 characters on each prime.
@@ -96,7 +96,7 @@ binary: 17 KB
 
 I was expecting much less of a decrease, but this means there are a lot of primes going on in these binaries. So I'm going to use now a different approach.
 
-### Phase 7. Handling primes II.
+### Phase 7. Handling primes II. [source](./src/phase7.c)
 
 This time I'm redesigning the multiplication algorithm. It will continue finding the divisors, but if it gets a prime it will decrease it by 1 until it's not prime and
 therefore won't give any problems. Then that decrease is added at the end to compensate.
@@ -107,7 +107,7 @@ binary: 17 KB
 
 Looks like the `ls` binary has been reduced by a lot by using this feature! Great!
 
-### Phase 8. Don't handle primes and half the diff.
+### Phase 8. Don't handle primes and half the diff. [source](./src/phase8.c)
 
 The idea is halving the diff and storing the odd bit. Then do the loop for the diff but each loop increments 2 times.
 
@@ -117,7 +117,7 @@ binary: 17KB
 
 Looks like this strategy works the same and requires less work for the producer.
 
-### Phase 9. Back to handling primes I.
+### Phase 9. Back to handling primes I. [source](./src/phase9.c)
 
 We keep halving the diff but remove the loop if the min div is 1.
 
@@ -128,7 +128,7 @@ binary: 17 KB
 
 That strategy kept the same numbers overall.
 
-### Phase 10. Various shortcuts.
+### Phase 10. Various shortcuts. [source](./src/phase10.c)
 
 A lot of the diffs are big because they go down to zero or a small number from a big one or go to a high number from a small one.
 Let's fix that. Now if next one is zero only `[-]` will be printed to clear the cell.
@@ -147,7 +147,7 @@ in case there is a noticeable improvement.
 It didn't do very well. I'll keep it at 12.
 
 
-### Phase 11. Better divisors.
+### Phase 11. Better divisors. [source](./src/phase11.c)
 
 Right now the converter just picks the biggest divisor it finds. It would be wiser to
 choose the pair of numbers which have the lesser difference between them. That's the change.
