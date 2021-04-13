@@ -15,5 +15,10 @@ BINARIES := $(patsubst %,bin/phase%,$(shell find src/ -maxdepth 1 -name 'phase*.
 
 bin: $(BINARIES)
 
-all: bin
+last:
+	@for phase in $(patsubst bin/phase%,%,$(BINARIES)); do \
+		echo $$phase; done | tail -n1 | xargs -I{} gcc -o bin/b2bf src/phase{}.c
+
+
+all: last
 

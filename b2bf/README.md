@@ -12,7 +12,12 @@ The compiler binary will differ on each phase so will be specified there.
 To compile all of the sources, I'm using this:
 
 ```bash
-gcc -o phaseX phaseX.c
+make bin
+```
+
+You can also just get the last version with
+```bash
+make last
 ```
 
 You can refer to the [makefile](./makefile) for more details.
