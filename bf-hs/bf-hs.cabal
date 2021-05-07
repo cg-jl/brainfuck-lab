@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 649a44c3b5605bf23f8ca16f22c32c5dd024a2be486cea79e2e554b8443be781
+-- hash: 311d2fafc613be82422821965d23a64a542ce0d6acb94db67b1dff8335c6a17d
 
 name:           bf-hs
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , mtl
   default-language: Haskell2010
 
 executable bf-hs-exe
@@ -42,6 +43,7 @@ executable bf-hs-exe
   build-depends:
       base >=4.7 && <5
     , bf-hs
+    , mtl
   default-language: Haskell2010
 
 test-suite bf-hs-test
@@ -55,4 +57,5 @@ test-suite bf-hs-test
   build-depends:
       base >=4.7 && <5
     , bf-hs
+    , mtl
   default-language: Haskell2010

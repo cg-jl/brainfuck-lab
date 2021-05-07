@@ -1,6 +1,7 @@
 module Lib (runFile) where
 
 import Control.Monad
+import Control.Monad.State
 import Data.Char (chr, ord)
 import Data.Either
 import System.IO (getChar, hFlush, hPutStrLn, putChar, stderr, stdout)
@@ -34,17 +35,22 @@ checkSyntax = checkSyntax' (0, [])
 
 -- compiling it down.
 data BFCommand
-  = PointLeft
-  | PointRight
-  | -- use some easy optimization potential
-    Increment Int
-  | Decrement Int
-  | -- this one's cool as well.
-    Reset
+  = GoLeft
+  | GoRight
+  | Increment
+  | Decrement
   | Print
-  | Loop [BFCommand]
   | Read
-  deriving (Show)
+  | Loop [BFCommand]
+
+instance Show BFCommand where
+  show GoLeft = "<"
+  show GoRight = ">"
+  show Increment = "+"
+  show Decrement = "-"
+  show Print = "."
+  show Read = ","
+  show (Loop xs) = "[" ++ concatMap show xs ++ "]"
 
 -- find the companion '[' on nested loops.
 findLoop :: String -> (String, String)
@@ -63,79 +69,73 @@ findLoop = findLoop' 0
 
 compile :: String -> Either SyntaxError [BFCommand]
 -- essential to check the syntax before compiling things like loops and such.
-compile xs = optimize . compile' <$> checkSyntax xs
+compile xs = compile' <$> checkSyntax xs
   where
     compile' :: String -> [BFCommand]
     compile' [] = []
     compile' ('.' : xs) = Print : compile' xs
     compile' (',' : xs) = Read : compile' xs
-    -- take as many '+' as possible and wrap them into a single command.
-    compile' ('+' : xs) = let (p, q) = span (== '+') xs in Increment (length p + 1) : compile' q
-    -- same with '-'.
-    compile' ('-' : xs) = let (p, q) = span (== '-') xs in Decrement (length p + 1) : compile' q
-    compile' ('>' : xs) = PointRight : compile' xs
-    compile' ('<' : xs) = PointLeft : compile' xs
+    compile' ('+' : xs) = Increment : compile' xs
+    compile' ('-' : xs) = Decrement : compile' xs
+    compile' ('>' : xs) = GoRight : compile' xs
+    compile' ('<' : xs) = GoLeft : compile' xs
     -- find the companion ']' and parse the internal loop, also compile the rest.
     compile' ('[' : xs) = let (p, q) = findLoop xs in Loop (compile' p) : compile' q
     compile' (x : xs) = compile' xs
 
--- Optimizing!
+data Tape = Tape {pivot :: Int, left :: [Int], right :: [Int]}
 
-optimize :: [BFCommand] -> [BFCommand]
-optimize [] = []
-optimize (Loop [Decrement 1] : cs) = Reset : optimize cs
-optimize (x : xs) = x : optimize xs
+mkTape :: Tape
+mkTape = Tape 0 z z where z = repeat 0
 
--- Managing data.
+runMachine :: [BFCommand] -> StateT Tape IO ()
+runMachine = mapM_ runOne
 
--- left anchor-> | <-right anchor | currently pointed to.
-data Buffer = Buffer [Int] [Int] Int
+data Lens a b = Lens {view :: a -> b, set :: a -> b -> a}
 
--- move pointer left -> move everything right.
-moveLeft (Buffer (l : lefts) rights pivot) = Buffer lefts (pivot : rights) l
+-- like 'modify' but for Lens.
+over :: Lens a b -> (b -> b) -> a -> a
+over lens f a =
+  let v = view lens a
+   in set lens a (f v)
 
--- move pointer right -> move eveything left.
-moveRight (Buffer lefts (r : rights) pivot) = Buffer (pivot : lefts) rights r
+tapePivot :: Lens Tape Int
+tapePivot = Lens pivot $ \tape newpv -> tape {pivot = newpv}
 
-newBuffer = Buffer zeroes zeroes 0
+runOne :: BFCommand -> StateT Tape IO ()
+runOne GoLeft = modify moveTapeLeft
+runOne GoRight = modify moveTapeRight
+runOne Print = gets pivot >>= lift . putChar . chr
+runOne Read = lift getChar >>= modify . flip (set tapePivot) . ord
+runOne Increment = modify $ over tapePivot incWrapped
   where
-    zeroes = repeat 0
+    incWrapped :: Int -> Int
+    incWrapped 255 = 0
+    incWrapped a = a + 1
+runOne Decrement = modify $ over tapePivot decWrapped
+  where
+    decWrapped :: Int -> Int
+    decWrapped 0 = 255
+    decWrapped a = a - 1
+runOne l@(Loop xs) = gets pivot >>= branch
+  where
+    branch :: Int -> StateT Tape IO ()
+    -- if pivot is zero, don't run the loop.
+    branch 0 = return ()
+    -- otherwise run the loop, and run this logic again.
+    branch _ = runMachine xs >> runOne l
 
--- helpers for operations.
+moveTapeLeft :: Tape -> Tape
+moveTapeLeft (Tape p ls (r : rs)) = Tape r (p : ls) rs
 
-sumOverflow x y = (x + y) `mod` 256
+moveTapeRight :: Tape -> Tape
+moveTapeRight (Tape p (l : ls) rs) = Tape l ls (p : rs)
 
-subOverflow x y
-  | x >= y = x - y
-  | otherwise = abs $ (x - y) `mod` 256
-
--- Now the fun stuff: interpreting.
-
-run :: Buffer -> [BFCommand] -> IO Buffer
-run buf [] = return buf
-run buf (PointLeft : cs) = run (moveLeft buf) cs
-run buf (PointRight : cs) = run (moveRight buf) cs
-run buf@(Buffer _ _ p) (Print : cs) = putChar (chr p) >> hFlush stdout >> run buf cs
-run (Buffer l r _) (Read : cs) = getChar >>= (`run` cs) . Buffer l r . ord
-run buf@(Buffer l r p) (Increment x : cs) = (`run` cs) . Buffer l r . sumOverflow p $ x
-run buf@(Buffer l r p) (Decrement x : cs) = (`run` cs) . Buffer l r . subOverflow p $ x
-run buf@(Buffer l r _) (Reset : cs) = run (Buffer l r 0) cs
-run buf@(Buffer _ _ p1) loop@(Loop ys : xs) =
-  -- if it's zero, skip it.
-  if p1 == 0
-    then run buf xs
-    else do
-      -- run the loop once.
-      newbuf@(Buffer _ _ p2) <- run buf ys
-      -- if the value it ended up in is not zero, run it again.
-      -- else you can exit the loop.
-      let runner = run newbuf in if p2 == 0 then runner xs else runner loop
-
-runBF :: [BFCommand] -> IO ()
-runBF = void . run newBuffer
+run :: [BFCommand] -> IO ()
+run = flip evalStateT mkTape . runMachine
 
 handleError :: Show a => a -> IO ()
 handleError = hPutStrLn stderr . ("Error: " ++) . show
 
 runFile :: String -> IO ()
-runFile = readFile >=> either handleError runBF . compile
+runFile = readFile >=> either handleError run . compile

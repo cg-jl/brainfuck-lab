@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <string.h>
 
 
 /**
@@ -26,7 +27,7 @@ int main(int argc, const char **argv) {
     fprintf(stderr, "Usage: %s <file>\n", *argv);
     return 1;
   }
-  FILE* fp = fopen(argv[1], "rb");
+  FILE* fp = (strcmp(argv[1], "--") == 0) ? stdin : fopen(argv[1], "rb");
   if (fp == NULL) {
     die("fopen");
   }
