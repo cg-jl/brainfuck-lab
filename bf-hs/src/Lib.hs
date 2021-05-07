@@ -105,7 +105,7 @@ tapePivot = Lens pivot $ \tape newpv -> tape {pivot = newpv}
 runOne :: BFCommand -> StateT Tape IO ()
 runOne GoLeft = modify moveTapeLeft
 runOne GoRight = modify moveTapeRight
-runOne Print = gets pivot >>= lift . putChar . chr
+runOne Print = gets pivot >>= lift . (putChar >=> const (hFlush stdout)) . chr
 runOne Read = lift getChar >>= modify . flip (set tapePivot) . ord
 runOne Increment = modify $ over tapePivot incWrapped
   where
