@@ -4,6 +4,7 @@ import Control.Monad
 import Control.Monad.State
 import Data.Char (chr, ord)
 import Data.Either
+import Data.Functor
 import System.IO (getChar, hFlush, hPutStrLn, putChar, stderr, stdout)
 
 -- check all '[' match.
@@ -14,24 +15,36 @@ instance Show SyntaxError where
   show (MissingLB pos) = "Missing opening '[' for ']' at " ++ show pos
   show (MissingRB pos) = "Missing closing ']' for '[' at " ++ show pos
 
+data CheckerState = CheckerState {currentPos :: Int, posStack :: [Int]}
+
+addCurrentPosToStack :: CheckerState -> CheckerState
+addCurrentPosToStack (CheckerState pos stack) = CheckerState pos (pos : stack)
+
+incCurrentPos :: CheckerState -> CheckerState
+incCurrentPos (CheckerState pos stack) = CheckerState (pos + 1) stack
+
 checkSyntax :: String -> Either SyntaxError String
-checkSyntax = checkSyntax' (0, [])
+checkSyntax xs = runStateT (checkSyntax' xs) (CheckerState 0 []) $> xs
   where
-    checkSyntax' :: (Int, [Int]) -> String -> Either SyntaxError String
-    -- no more to check, no more loops. have fun!
-    checkSyntax' (_, []) [] = return []
-    -- no more to check, but one unclosed loop. no fun for you! :(
-    checkSyntax' (_, pos : _) [] = Left $ MissingRB pos
-    checkSyntax' (pos, stack) (x : xs) =
-      (x :) <$> case x of
-        -- push loop
-        '[' -> checkSyntax' (pos + 1, pos : stack) xs
-        ']' -> case stack of
-          -- stack empty -> bad closing.
-          [] -> Left $ MissingLB pos
-          -- pop from the stack.
-          _ : ls -> checkSyntax' (pos + 1, ls) xs
-        _ -> checkSyntax' (pos + 1, stack) xs
+    popStack :: StateT CheckerState (Either SyntaxError) ()
+    popStack = do
+      stack <- gets posStack
+      when (null stack) $ gets currentPos >>= lift . Left . MissingLB
+      modify $ \state -> state {posStack = tail stack}
+
+    checkChar :: Char -> StateT CheckerState (Either SyntaxError) ()
+    checkChar '[' = modify addCurrentPosToStack
+    checkChar ']' = popStack
+    checkChar _ = return ()
+
+    checkSyntax' :: String -> StateT CheckerState (Either SyntaxError) ()
+    checkSyntax' xs = mapM_ checkChar xs >> checkForMissingRB
+      where
+        checkForMissingRB = do
+          xs <- gets posStack
+          case xs of
+            [] -> return ()
+            (pos : _) -> lift $ Left $ MissingRB pos
 
 -- compiling it down.
 data BFCommand
