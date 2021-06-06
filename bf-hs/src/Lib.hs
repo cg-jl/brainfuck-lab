@@ -42,9 +42,9 @@ checkSyntax xs = runStateT (checkSyntax' xs) (CheckerState 0 []) $> xs
       where
         checkForMissingRB = do
           xs <- gets posStack
-          unless (null xs) missingRight
+          unless (null xs) (missingRight xs)
 
-        missingRight = gets (head . posStack) >>= lift . Left . MissingRB
+        missingRight = lift . Left . MissingRB . head
 
 -- compiling it down.
 data BFCommand
