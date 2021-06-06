@@ -19,6 +19,8 @@ description:         Please see the README on GitHub at <https://github.com/Cybe
 dependencies:
 - base >= 4.7 && < 5
 - mtl
+- transformers
+- bytestring
 
 library:
   source-dirs: src

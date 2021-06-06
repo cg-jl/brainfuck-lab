@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 311d2fafc613be82422821965d23a64a542ce0d6acb94db67b1dff8335c6a17d
+-- hash: 6929e12fb03279029a4650143cf585d3b51cefa4bfb946ccfff186e9631d0ac1
 
 name:           bf-hs
 version:        0.1.0.0
@@ -23,14 +23,21 @@ source-repository head
 
 library
   exposed-modules:
+      Compile
+      Instructions
+      Interpreter
       Lib
+      Syntax
+      Util
   other-modules:
       Paths_bf_hs
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , mtl
+    , transformers
   default-language: Haskell2010
 
 executable bf-hs-exe
@@ -43,7 +50,9 @@ executable bf-hs-exe
   build-depends:
       base >=4.7 && <5
     , bf-hs
+    , bytestring
     , mtl
+    , transformers
   default-language: Haskell2010
 
 test-suite bf-hs-test
@@ -57,5 +66,7 @@ test-suite bf-hs-test
   build-depends:
       base >=4.7 && <5
     , bf-hs
+    , bytestring
     , mtl
+    , transformers
   default-language: Haskell2010
