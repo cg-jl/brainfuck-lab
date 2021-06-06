@@ -1,9 +1,7 @@
-module Main where
+module Main (main) where
 
-import Control.Monad
 import Lib
 import System.Environment (getArgs)
-import System.IO (hPutStrLn, stderr)
 
 parseArgs :: IO (Either String String)
 parseArgs = do

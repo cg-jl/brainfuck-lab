@@ -33,6 +33,16 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
+  # https://medium.com/mercury-bank/enable-all-the-warnings-a0517bc081c3
+    - -Wincomplete-uni-patterns
+    - -Wincomplete-record-updates
+    - -Wpartial-fields
+    - -Werror=missing-home-modules
+    - -Widentities
+    - -Wredundant-constraints
+    - -Wmissing-export-lists
+    - -Wmonomorphism-restriction
     dependencies:
     - bf-hs
 

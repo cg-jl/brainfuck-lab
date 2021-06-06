@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6929e12fb03279029a4650143cf585d3b51cefa4bfb946ccfff186e9631d0ac1
+-- hash: 3f2585e8d88ea138c71cc74e825f64f8575b4a1e350a75d63260546c4d4042bc
 
 name:           bf-hs
 version:        0.1.0.0
@@ -46,7 +46,7 @@ executable bf-hs-exe
       Paths_bf_hs
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Werror=missing-home-modules -Widentities -Wredundant-constraints -Wmissing-export-lists -Wmonomorphism-restriction
   build-depends:
       base >=4.7 && <5
     , bf-hs
