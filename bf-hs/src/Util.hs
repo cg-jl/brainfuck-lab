@@ -4,6 +4,7 @@ import Control.Monad.State
 import Control.Monad.Trans.Maybe
 import Data.Functor
 import Data.List
+import Data.Maybe
 
 data Lens comp sub = Lens {view :: comp -> sub, update :: comp -> sub -> comp}
 
@@ -33,13 +34,14 @@ advance = do
     [] -> fail "empty list"
     (x : xs) -> lift (put xs) $> x
 
-runTillNothing :: (a -> MaybeT (State [a]) b) -> State [a] [b]
+runTillNothing :: Monad m => (a -> MaybeT (StateT [a] m) b) -> StateT [a] m [b]
 runTillNothing f = next >>= maybe stop again
   where
     next = runMaybeT (advance >>= f)
     again x = (x :) <$> runTillNothing f
     stop = return []
 
+-- run a composed state and use the lens to update the inner stream.
 runTillNothingL :: Monad m => Lens comp [a] -> (a -> MaybeT (StateT comp m) b) -> StateT comp m [b]
 runTillNothingL lens f = next >>= maybe stop again
   where
@@ -50,3 +52,12 @@ runTillNothingL lens f = next >>= maybe stop again
 
     stop = return []
     again x = (x :) <$> runTillNothingL lens f
+
+runTillNoInput :: Monad m => (a -> StateT [a] m b) -> StateT [a] m [b]
+runTillNoInput f = runTillNothing (lift . f)
+
+-- advance filtering out maybes.
+runWithFilter :: Monad m => (a -> MaybeT (StateT [a] m) b) -> StateT [a] m [b]
+runWithFilter f = concat <$> runTillNoInput next
+  where
+    next c = maybeToList <$> runMaybeT (f c)

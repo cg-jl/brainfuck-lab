@@ -17,3 +17,4 @@ instance Show BFCommand where
   show Print = "."
   show Read = ","
   show (Loop xs) = "[" ++ concatMap show xs ++ "]"
+
